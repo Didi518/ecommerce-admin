@@ -16,22 +16,25 @@ export function MainNav({
     {
       href: `/${params.storeId}`,
       label: 'Accueil',
-      active: pathname === `${params.storeId}`,
+      active: pathname === `/${params.storeId}`,
     },
     {
-      href: `/${params.storeId}/affichage`,
-      label: 'Affichage',
-      active: pathname === `${params.storeId}/affichage`,
+      href: `/${params.storeId}/affichages`,
+      label: 'Affichages',
+      active: pathname === `/${params.storeId}/affichages`,
     },
     {
       href: `/${params.storeId}/parametres`,
       label: 'Paramètres',
-      active: pathname === `${params.storeId}/parametres`,
+      active: pathname === `/${params.storeId}/parametres`,
     },
   ];
 
   return (
-    <nav className={cn('flex items-center space-x-4 lg:space-x-6', className)}>
+    <nav
+      className={cn('flex items-center space-x-4 lg:space-x-6', className)}
+      {...props}
+    >
       {routes.map((route) => (
         <Link
           key={route.href}

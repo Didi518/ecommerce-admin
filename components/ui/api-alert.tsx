@@ -32,6 +32,7 @@ export const ApiAlert: React.FC<ApiAlertProps> = ({
     navigator.clipboard.writeText(description);
     toast.success("Adresse de l'Api copiée");
   };
+
   return (
     <Alert>
       <Server className="h-4 w-4" />
