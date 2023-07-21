@@ -3,7 +3,7 @@
 import * as z from 'zod';
 import axios from 'axios';
 import { useState } from 'react';
-import { Billboard } from '@prisma/client';
+import { Color } from '@prisma/client';
 import { Trash } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-hot-toast';
@@ -26,59 +26,62 @@ import { AlertModal } from '@/components/modals/alert-modal';
 import ImageUpload from '@/components/ui/image-upload';
 
 const formSchema = z.object({
-  label: z.string().min(1, {
+  name: z.string().min(1, {
     message: 'Minimum: 1 caractère',
   }),
-  imageUrl: z.string().min(1, {
-    message: 'Minimum: 1 caractère',
-  }),
+  value: z
+    .string()
+    .min(4, {
+      message: 'Minimum: 4 caractères',
+    })
+    .regex(/^#/, {
+      message: 'Entrez un code couleur hexadécimal correct',
+    }),
 });
 
-type BillboardFormValues = z.infer<typeof formSchema>;
+type ColorFormValues = z.infer<typeof formSchema>;
 
-interface BillboardFormProps {
-  initialData: Billboard | null;
+interface ColorFormProps {
+  initialData: Color | null;
 }
 
-export const BillboardForm: React.FC<BillboardFormProps> = ({
-  initialData,
-}) => {
+export const ColorForm: React.FC<ColorFormProps> = ({ initialData }) => {
   const params = useParams();
   const router = useRouter();
 
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const title = initialData ? "Modifier l'affichage" : 'Nouvel affichage';
+  const title = initialData ? 'Modifier la couleur' : 'Nouvelle couleur';
   const description = initialData
-    ? 'Modifier un affichage'
-    : 'Créez un nouvel affichage';
+    ? 'Modifier une couleur'
+    : 'Créez une nouvelle couleur';
   const toastMessage = initialData
-    ? 'Affichage mis à jour'
-    : 'Nouvel affichage créé';
+    ? 'Couleur mise à jour'
+    : 'Nouvelle couleur créée';
   const action = initialData ? 'Enregistrer' : 'Valider';
 
-  const form = useForm<BillboardFormValues>({
+  const form = useForm<ColorFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: initialData || {
-      label: '',
-      imageUrl: '',
+      name: '',
+      value: '',
     },
   });
 
-  const onSubmit = async (data: BillboardFormValues) => {
+  const onSubmit = async (data: ColorFormValues) => {
     try {
       setLoading(true);
       if (initialData) {
         await axios.patch(
-          `/api/${params.storeId}/affichages/${params.billboardId}`,
+          `/api/${params.storeId}/couleurs/${params.colorId}`,
           data
         );
       } else {
-        await axios.post(`/api/${params.storeId}/affichages`, data);
+        await axios.post(`/api/${params.storeId}/couleurs`, data);
       }
       router.refresh();
-      router.push(`/${params.storeId}/affichages`);
+      router.push(`/${params.storeId}/couleurs`);
       toast.success(toastMessage);
     } catch (error) {
       toast.error('Un problème est survenu');
@@ -90,15 +93,13 @@ export const BillboardForm: React.FC<BillboardFormProps> = ({
   const onDelete = async () => {
     try {
       setLoading(true);
-      await axios.delete(
-        `/api/${params.storeId}/affichages/${params.billboardId}`
-      );
+      await axios.delete(`/api/${params.storeId}/couleurs/${params.colorId}`);
       router.refresh();
-      router.push(`/${params.storeId}/affichages`);
-      toast.success('Affichage supprimé');
+      router.push(`/${params.storeId}/couleurs`);
+      toast.success('Couleur supprimée');
     } catch (error) {
       toast.error(
-        'Assurez-vous de supprimer toutes les catégories qui utilisent cet affichage'
+        'Assurez-vous de supprimer tous les produits qui utilisent cette couleur'
       );
     } finally {
       setLoading(false);
@@ -133,37 +134,42 @@ export const BillboardForm: React.FC<BillboardFormProps> = ({
           onSubmit={form.handleSubmit(onSubmit)}
           className="space-y-8 w-full"
         >
-          <FormField
-            control={form.control}
-            name="imageUrl"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Image de fond</FormLabel>
-                <FormControl>
-                  <ImageUpload
-                    value={field.value ? [field.value] : []}
-                    disabled={loading}
-                    onChange={(url) => field.onChange(url)}
-                    onRemove={() => field.onChange('')}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
           <div className="grid grid-cols-3 gap-8">
             <FormField
               control={form.control}
-              name="label"
+              name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Label</FormLabel>
+                  <FormLabel>Nom</FormLabel>
                   <FormControl>
                     <Input
                       disabled={loading}
-                      placeholder="Titre de l'affichage"
+                      placeholder="Nom de la couleur"
                       {...field}
                     />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="value"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Valeur</FormLabel>
+                  <FormControl>
+                    <div className="flex items-center gap-x-4">
+                      <Input
+                        disabled={loading}
+                        placeholder="Valeur de la couleur"
+                        {...field}
+                      />
+                      <div
+                        className="border p-4 rounded-full"
+                        style={{ backgroundColor: field.value }}
+                      />
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>

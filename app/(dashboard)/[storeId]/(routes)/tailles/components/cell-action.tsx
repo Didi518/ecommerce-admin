@@ -16,10 +16,10 @@ import {
 import { Button } from '@/components/ui/button';
 import { AlertModal } from '@/components/modals/alert-modal';
 
-import { BillboardColumn } from './columns';
+import { SizeColumn } from './columns';
 
 interface CellActionProps {
-  data: BillboardColumn;
+  data: SizeColumn;
 }
 
 export const CellAction: React.FC<CellActionProps> = ({ data }) => {
@@ -31,18 +31,18 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
 
   const onCopy = (id: string) => {
     navigator.clipboard.writeText(id);
-    toast.success("Id de l'affichage copié");
+    toast.success('Id de la taille copié');
   };
 
   const onDelete = async () => {
     try {
       setLoading(true);
-      await axios.delete(`/api/${params.storeId}/affichages/${data.id}`);
+      await axios.delete(`/api/${params.storeId}/tailles/${data.id}`);
       router.refresh();
-      toast.success('Affichage supprimé');
+      toast.success('Taille supprimée');
     } catch (error) {
       toast.error(
-        'Assurez-vous de supprimer toutes les catégories qui utilisent cet affichage'
+        'Assurez-vous de supprimer tous les produits qui utilisent cette taille'
       );
     } finally {
       setLoading(false);
@@ -72,9 +72,7 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
             Copier Id
           </DropdownMenuItem>
           <DropdownMenuItem
-            onClick={() =>
-              router.push(`/${params.storeId}/affichages/${data.id}`)
-            }
+            onClick={() => router.push(`/${params.storeId}/tailles/${data.id}`)}
           >
             <Edit className="mr-2 h-4 w-4" />
             Modifier

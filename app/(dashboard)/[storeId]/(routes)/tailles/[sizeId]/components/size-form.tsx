@@ -3,7 +3,7 @@
 import * as z from 'zod';
 import axios from 'axios';
 import { useState } from 'react';
-import { Billboard } from '@prisma/client';
+import { Size } from '@prisma/client';
 import { Trash } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-hot-toast';
@@ -26,59 +26,57 @@ import { AlertModal } from '@/components/modals/alert-modal';
 import ImageUpload from '@/components/ui/image-upload';
 
 const formSchema = z.object({
-  label: z.string().min(1, {
+  name: z.string().min(1, {
     message: 'Minimum: 1 caractère',
   }),
-  imageUrl: z.string().min(1, {
+  value: z.string().min(1, {
     message: 'Minimum: 1 caractère',
   }),
 });
 
-type BillboardFormValues = z.infer<typeof formSchema>;
+type SizeFormValues = z.infer<typeof formSchema>;
 
-interface BillboardFormProps {
-  initialData: Billboard | null;
+interface SizeFormProps {
+  initialData: Size | null;
 }
 
-export const BillboardForm: React.FC<BillboardFormProps> = ({
-  initialData,
-}) => {
+export const SizeForm: React.FC<SizeFormProps> = ({ initialData }) => {
   const params = useParams();
   const router = useRouter();
 
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const title = initialData ? "Modifier l'affichage" : 'Nouvel affichage';
+  const title = initialData ? 'Modifier la taille' : 'Nouvelle taille';
   const description = initialData
-    ? 'Modifier un affichage'
-    : 'Créez un nouvel affichage';
+    ? 'Modifier une taille'
+    : 'Créez une nouvelle taille';
   const toastMessage = initialData
-    ? 'Affichage mis à jour'
-    : 'Nouvel affichage créé';
+    ? 'Taille mise à jour'
+    : 'Nouvelle taille créée';
   const action = initialData ? 'Enregistrer' : 'Valider';
 
-  const form = useForm<BillboardFormValues>({
+  const form = useForm<SizeFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: initialData || {
-      label: '',
-      imageUrl: '',
+      name: '',
+      value: '',
     },
   });
 
-  const onSubmit = async (data: BillboardFormValues) => {
+  const onSubmit = async (data: SizeFormValues) => {
     try {
       setLoading(true);
       if (initialData) {
         await axios.patch(
-          `/api/${params.storeId}/affichages/${params.billboardId}`,
+          `/api/${params.storeId}/tailles/${params.sizeId}`,
           data
         );
       } else {
-        await axios.post(`/api/${params.storeId}/affichages`, data);
+        await axios.post(`/api/${params.storeId}/tailles`, data);
       }
       router.refresh();
-      router.push(`/${params.storeId}/affichages`);
+      router.push(`/${params.storeId}/tailles`);
       toast.success(toastMessage);
     } catch (error) {
       toast.error('Un problème est survenu');
@@ -90,15 +88,13 @@ export const BillboardForm: React.FC<BillboardFormProps> = ({
   const onDelete = async () => {
     try {
       setLoading(true);
-      await axios.delete(
-        `/api/${params.storeId}/affichages/${params.billboardId}`
-      );
+      await axios.delete(`/api/${params.storeId}/tailles/${params.sizeId}`);
       router.refresh();
-      router.push(`/${params.storeId}/affichages`);
-      toast.success('Affichage supprimé');
+      router.push(`/${params.storeId}/tailles`);
+      toast.success('Taille supprimée');
     } catch (error) {
       toast.error(
-        'Assurez-vous de supprimer toutes les catégories qui utilisent cet affichage'
+        'Assurez-vous de supprimer tous les produits qui utilisent cette taille'
       );
     } finally {
       setLoading(false);
@@ -133,35 +129,34 @@ export const BillboardForm: React.FC<BillboardFormProps> = ({
           onSubmit={form.handleSubmit(onSubmit)}
           className="space-y-8 w-full"
         >
-          <FormField
-            control={form.control}
-            name="imageUrl"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Image de fond</FormLabel>
-                <FormControl>
-                  <ImageUpload
-                    value={field.value ? [field.value] : []}
-                    disabled={loading}
-                    onChange={(url) => field.onChange(url)}
-                    onRemove={() => field.onChange('')}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
           <div className="grid grid-cols-3 gap-8">
             <FormField
               control={form.control}
-              name="label"
+              name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Label</FormLabel>
+                  <FormLabel>Nom</FormLabel>
                   <FormControl>
                     <Input
                       disabled={loading}
-                      placeholder="Titre de l'affichage"
+                      placeholder="Nom de la taille"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="value"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Valeur</FormLabel>
+                  <FormControl>
+                    <Input
+                      disabled={loading}
+                      placeholder="Valeur de la taille"
                       {...field}
                     />
                   </FormControl>
